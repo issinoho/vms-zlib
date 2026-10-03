@@ -1,0 +1,33 @@
+Subject: zlib.h: on OpenVMS declare the API with #pragma names as_is
+
+make_vms.com compiles zlib with /NAMES=AS_IS, so its routines are compress2,
+uncompress, ...  A program compiled with the default /NAMES=UPPERCASE
+referenced COMPRESS2 etc. and did not link (%ILINK-W-USEUNDEF).  Declare the
+API with #pragma names as_is (saving and restoring the caller's setting), so
+programs link whatever /NAMES they use.
+
+--- a/zlib.h	2026-10-03 23:25:11.995050455 +0100
++++ b/zlib.h	2026-10-03 23:25:24.178499854 +0100
+@@ -37,6 +37,13 @@
+ # include "zconf.h"
+ #endif
+ 
++#ifdef __VMS
++/* The library is compiled with /NAMES=AS_IS; declare its API that way too,
++   so programs link with it whatever /NAMES qualifier they use. */
++#  pragma names save
++#  pragma names as_is
++#endif
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -2054,4 +2061,8 @@
+ }
+ #endif
+ 
++#ifdef __VMS
++#  pragma names restore
++#endif
++
+ #endif /* ZLIB_H */
