@@ -1,0 +1,59 @@
+Subject: make_vms.com: recognise OpenVMS x86-64
+
+The architecture was derived from HW_MODEL, which puts x86-64 in the VAX range,
+so on x86-64 the objects were compiled without /NAMES=AS_IS and the shared
+image options file was written with VAX UNIVERSAL= lines, which the linker
+rejects (%ILINK-F-OPTSYNERR).  Use ARCH_NAME and treat x86-64 like Alpha and
+IA64.
+
+--- a/make_vms.com	2026-10-03 21:56:39.323883275 +0100
++++ b/make_vms.com	2026-10-03 21:56:51.162784583 +0100
+@@ -53,14 +53,17 @@
+ $ optfile  = name + ".opt"
+ $ mapfile  = name + ".map"
+ $ libdefs  = ""
+-$ vax      = f$getsyi("HW_MODEL").lt.1024
+-$ axp      = f$getsyi("HW_MODEL").ge.1024 .and. f$getsyi("HW_MODEL").lt.4096
+-$ ia64     = f$getsyi("HW_MODEL").ge.4096
++$! Architecture from ARCH_NAME: HW_MODEL put x86-64 in the VAX range.
++$ arch     = f$edit(f$getsyi("ARCH_NAME"), "UPCASE")
++$ vax      = arch .eqs. "VAX"
++$ axp      = arch .eqs. "ALPHA"
++$ ia64     = arch .eqs. "IA64"
++$ x86      = arch .eqs. "X86_64"
+ $!
+ $! 2012-03-05 SMS.
+ $! Why is this needed?  And if it is needed, why not simply ".not. vax"?
+ $!
+-$!!! if axp .or. ia64 then  set proc/parse=extended
++$!!! if axp .or. ia64 .or. x86 then  set proc/parse=extended
+ $!
+ $ whoami = f$parse(f$environment("Procedure"),,,,"NO_CONCEAL")
+ $ mydef  = F$parse(whoami,,,"DEVICE")
+@@ -107,7 +110,7 @@
+ $! 2012-03-05 SMS.
+ $! Why /NAMES = AS_IS?  Why not simply ".not. vax"?  And why not on VAX?
+ $!
+-$   if axp .or. ia64
++$   if axp .or. ia64 .or. x86
+ $   then
+ $       ccopt = ccopt + "/name=as_is/opt=(inline=speed)"
+ $       s_case = true
+@@ -743,7 +746,7 @@
+ $ module3 = "gzseek#gztell#inflate#inflateEnd#inflateInit_#inflateSetDictionary"
+ $ module4 = "inflateSync#uncompress#zlibVersion#compress"
+ $ open/read map 'p1
+-$ if axp .or. ia64
++$ if axp .or. ia64 .or. x86
+ $ then
+ $     open/write aopt a.opt
+ $     open/write bopt b.opt
+@@ -857,7 +860,7 @@
+ $     	  goto vmap_loop
+ $VMAP_END:
+ $     else
+-$         write sys$output "Unknown Architecture (Not VAX, AXP, or IA64)"
++$         write sys$output "Unknown Architecture (Not VAX, AXP, IA64 or X86_64)"
+ $         write sys$output "No options file created"
+ $     endif
+ $ endif

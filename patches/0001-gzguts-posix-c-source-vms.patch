@@ -1,0 +1,22 @@
+Subject: gzguts.h: do not define _POSIX_C_SOURCE on OpenVMS
+
+zlib 1.3 defines _POSIX_C_SOURCE 200112L in gzguts.h, after <stdio.h>.  With
+the VSI C run-time library that makes <fcntl.h> declare creat() with two
+parameters, conflicting with the variadic declaration <unixio.h> already
+made, so gzclose.c (and the other gz*.c) failed with %CC-E-NOTCOMPAT.
+
+--- a/gzguts.h	2026-10-03 21:55:10.713970078 +0100
++++ b/gzguts.h	2026-10-03 21:55:10.732924453 +0100
+@@ -37,7 +37,11 @@
+ #  include <limits.h>
+ #endif
+ 
+-#ifndef _POSIX_C_SOURCE
++/* OpenVMS: defining _POSIX_C_SOURCE here, after <stdio.h>, makes the CRTL's
++   <fcntl.h> declare creat() with a prototype that conflicts with the one
++   <unixio.h> already gave (%CC-E-NOTCOMPAT).  The CRTL declares what zlib
++   needs without it. */
++#if !defined(_POSIX_C_SOURCE) && !defined(__VMS)
+ #  define _POSIX_C_SOURCE 200112L
+ #endif
+ #include <fcntl.h>
