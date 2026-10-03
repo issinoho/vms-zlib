@@ -1,0 +1,43 @@
+zlib for OpenVMS
+================
+
+This is zlib @VERSION@ built natively for OpenVMS @ARCH@, from the
+unmodified zlib release plus the patches in the vms-zlib project:
+
+    https://github.com/issinoho/vms-zlib
+
+Kit version: @KITVERSION@.  zlib is distributed under the zlib licence;
+see LICENSE.  The API is described in ZLIB.TXT (from the zlib.3 manual
+page) and in ZLIB.H itself.
+
+What is installed
+-----------------
+    ZLIB$ROOT:[INCLUDE]ZLIB.H, ZCONF.H   the zlib API
+    ZLIB$ROOT:[LIB]LIBZ.OLB              the library (object library)
+    ZLIB$ROOT:[BIN]MINIGZIP.EXE          zlib's small gzip program
+
+Setting up
+----------
+The kit installs ZLIB$STARTUP.COM into SYS$STARTUP and runs it once.  To
+define ZLIB$ROOT at every boot, the system manager adds this line to
+SYS$MANAGER:SYSTARTUP_VMS.COM:
+
+    $ @SYS$STARTUP:ZLIB$STARTUP.COM
+
+Building a program against zlib
+--------------------------------
+    $ CC /INCLUDE=ZLIB$ROOT:[INCLUDE] myprog.c
+    $ LINK myprog, ZLIB$ROOT:[LIB]LIBZ.OLB/LIBRARY
+
+The library is compiled with /NAMES=AS_IS; zlib's names are all shorter
+than 31 characters, so /NAMES=(AS_IS,SHORTENED) works as well.
+
+minigzip
+--------
+    $ minigzip :== $ZLIB$ROOT:[BIN]MINIGZIP.EXE
+    $ minigzip "-9" file.txt          ! -> file.txt-gz
+    $ minigzip "-d" file.txt-gz
+
+minigzip reads and writes raw bytes, so a VFC or variable-record file
+keeps its record structure in the compressed data; use it on Stream_LF
+files for exact Unix-compatible results.

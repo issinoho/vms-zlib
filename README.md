@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/banner.svg" alt="zlib for OpenVMS: a DECterm window running zlib's example and minigzip, with a zlib mark" width="100%">
+</p>
+
 # zlib for OpenVMS
 
 The [zlib](https://zlib.net) compression library (**1.3.2**) built natively for OpenVMS on
@@ -19,7 +23,7 @@ files in `vmsport/`.
 |---|---|---|
 | Builds with upstream's `make_vms.com` | yes | yes |
 | Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 | 2/2 |
-| PCSI kit | planned | planned |
+| PCSI kit (`ISSINOHO-<base>-ZLIB-V0103-2E1-1.PCSI`) | in progress | in progress |
 
 ## What gets built
 
@@ -59,6 +63,12 @@ By hand on VMS: copy the top-level files of `staging/zlib-1.3.2/` and its `vmspo
 1. curl for OpenVMS links this library statically ([vms-curl](https://github.com/issinoho/vms-curl)).
 2. A PCSI kit for zlib itself, and patches 0001-0002 offered upstream.
 3. A port to OpenVMS **Alpha**.
+
+## Artwork
+
+`docs/images/banner.svg` and `docs/images/icon.svg` were made for this project in the style
+of classic DECwindows and VT terminals, like those of its sibling ports. The "zlib" mark in
+them is our own drawing, not an official zlib logo.
 
 ## Licence
 

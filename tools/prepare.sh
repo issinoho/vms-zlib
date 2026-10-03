@@ -42,4 +42,32 @@ cp -a "$top/overlay/." "$stage/"
 
 printf 'VERSION=%s\nKIT_VERSION=%s-vms%s\n' "$UPSTREAM_VERSION" "$UPSTREAM_VERSION" \
     "$VMS_PATCH_LEVEL" > "$stage/vmsport/version.env"
+# --- PCSI kit inputs (vmsport/kit/MAKE_KIT.COM builds the kit on each node) --
+step "PCSI kit inputs"
+kit=$stage/vmsport/kit
+: "${KIT_PRODUCER:=ISSINOHO}"
+# zlib versions have three parts (1.3.2): the third is the PCSI update and
+# our VMS patch level the ECO, as in vms-awk, so 1.3.2-vms1 is V1.3-2E1.
+IFS=. read -r major minor update _ <<< "$UPSTREAM_VERSION"
+pcsiversion="V$major.$minor-${update:-0}E$VMS_PATCH_LEVEL"
+kitversion="$UPSTREAM_VERSION-vms$VMS_PATCH_LEVEL"
+subst() {
+    sed -e "s/@PRODUCER@/$KIT_PRODUCER/g" -e "s/@BASE@/$1/g" \
+        -e "s/@PCSIVERSION@/$pcsiversion/g" -e "s/@VERSION@/$UPSTREAM_VERSION/g" \
+        -e "s/@KITVERSION@/$kitversion/g" -e "s/@ARCH@/$2/g"
+}
+for base in I64VMS X86VMS; do
+    subst $base "" < "$kit/zlib.pcsi\$desc_template" > "$kit/ZLIB-$base.PCSI\$DESC"
+    subst $base "" < "$kit/zlib.pcsi\$text_template" > "$kit/ZLIB-$base.PCSI\$TEXT"
+done
+rm -f "$kit/zlib.pcsi\$desc_template" "$kit/zlib.pcsi\$text_template"
+subst "" "IA64 and x86-64" < "$kit/readme.vms" > "$kit/README.VMS"; rm -f "$kit/readme.vms"
+mkdir -p "$kit/doc"
+groff -man -Tascii -P-cbou "$stage/zlib.3" > "$kit/doc/ZLIB.TXT" 2>/dev/null
+cp "$stage/LICENSE" "$kit/doc/LICENSE."
+cp "$stage/README" "$kit/doc/README."
+cp "$stage/ChangeLog" "$kit/doc/CHANGELOG."
+printf 'KIT_PRODUCER=%s\nPCSI_VERSION=%s\nKIT_VERSION=%s\n' "$KIT_PRODUCER" "$pcsiversion" \
+    "$kitversion" > "$kit/kit.env"
+
 step "staged $stage"

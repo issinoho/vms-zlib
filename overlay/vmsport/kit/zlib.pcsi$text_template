@@ -1,0 +1,18 @@
+=product @PRODUCER@ @BASE@ ZLIB @PCSIVERSION@ full
+1 'PRODUCER
+=prompt @PRODUCER@
+1 'PRODUCT
+=prompt zlib @VERSION@ (compression library) for OpenVMS
+1 'NOTICE
+=prompt zlib is distributed under the zlib licence.
+1 RELEASE_NOTES
+=prompt Documentation is in [ZLIB.DOC]README.VMS under the installation directory.
+1 POST_INSTALL
+=prompt Post-installation tasks for zlib
+    At system startup: to define ZLIB$ROOT at every boot, add this line to
+    SYS$MANAGER:SYSTARTUP_VMS.COM:
+    $ @SYS$STARTUP:ZLIB$STARTUP.COM
+    Building against zlib: compile with /INCLUDE=ZLIB$ROOT:[INCLUDE]
+    and link with ZLIB$ROOT:[LIB]LIBZ.OLB/LIBRARY.
+
+PRODUCT REMOVE ZLIB removes the product and deassigns ZLIB$ROOT.
