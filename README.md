@@ -29,6 +29,7 @@ files in `vmsport/`.
 |---|---|---|
 | Builds with upstream's `make_vms.com` | yes | yes |
 | Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 | 2/2 |
+| Clang (LP64) build for programs compiled with clang (`BUILD ALL CLANG`) | n/a | builds; smoke test 2/2 |
 | PCSI kit ([v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1)) | `ISSINOHO-I64VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-X86VMS-ZLIB-V0103-2E1-1.PCSI` |
 
 ## Installing the kit
@@ -60,6 +61,16 @@ every boot). Build against it with `/INCLUDE=ZLIB$ROOT:[INCLUDE]` and
   `/INCLUDE=ZLIB$ROOT:[INCLUDE]` and link with `ZLIB$ROOT:[LIB]LIBZ.OLB/LIBRARY`.
 - `EXAMPLE.EXE` and `MINIGZIP.EXE`, zlib's test programs, and upstream's shared image
   `LIBZSHR.EXE`.
+
+**Clang (LP64) build (x86-64):** VSI C is ILP32 (`long` and pointers 32-bit) and VSI's
+clang is LP64, so objects from the two cannot be mixed, and zlib's `uLong` and `z_stream`
+differ between them. `@[.VMSPORT]BUILD ALL CLANG` (or `tools/build.sh x86 ALL CLANG`) runs
+the normal build, then compiles the library sources again with clang, against the same
+configured `zconf.h`, into `[.OBJ_X86_64_CLANG]` and the install tree
+`[.INSTALL_X86_64_CLANG]`. Its first user is [PHP for OpenVMS](https://github.com/issinoho/vms-php)
+(as vms-pcre2's clang tree serves [MariaDB](https://github.com/issinoho/vms-mariadb)).
+`tools/test.sh x86 CLANG` runs the smoke test against the clang-built `example` and
+`minigzip`: 2/2.
 
 ## Patches
 

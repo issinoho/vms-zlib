@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# test.sh <node> - run [.VMSPORT]TEST_SMOKE.COM against the built image on <node>.
+# test.sh <node> [CLANG] - run [.VMSPORT]TEST_SMOKE.COM against the built programs on <node>
+# (CLANG: the clang build in [.OBJ_X86_64_CLANG]).
 # Output is saved to out/smoke-<node>.log; exit status 0 only if all tests pass.
 set -euo pipefail
 
@@ -11,6 +12,6 @@ read -r _ _ _ _ _ WORKDIR _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf"
 
 mkdir -p "$top/out"
 job=$top/cache/smoke-$node.com
-printf '$ set noon\n$ @%s.%s.VMSPORT]TEST_SMOKE.COM\n' "${WORKDIR%]}" "$remote" > "$job"
+printf '$ set noon\n$ @%s.%s.VMSPORT]TEST_SMOKE.COM %s\n' "${WORKDIR%]}" "$remote" "${2:-}" > "$job"
 "$top/tools/vms.sh" "$node" run "$job" | grep -v '^$' | tee "$top/out/smoke-$node.log"
 grep -q 'SMOKE: [0-9]* passed, 0 failed' "$top/out/smoke-$node.log"
