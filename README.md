@@ -7,6 +7,7 @@
 [![Release](https://img.shields.io/github/v/release/issinoho/vms-zlib?label=release)](https://github.com/issinoho/vms-zlib/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/issinoho/vms-zlib/total?label=downloads)](https://github.com/issinoho/vms-zlib/releases)
 ![OpenVMS](https://img.shields.io/badge/OpenVMS-IA64%20%7C%20x86--64-blue)
+[![License](https://img.shields.io/badge/license-Zlib-blue)](COPYING)
 
 The [zlib](https://zlib.net) compression library (**1.3.2**) built natively for OpenVMS on **IA64**
 and **x86-64**, following zlib's own releases rather than any vendor's release cycle. Its first user
