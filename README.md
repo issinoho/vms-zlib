@@ -6,11 +6,11 @@
 
 [![Release](https://img.shields.io/github/v/release/issinoho/vms-zlib?label=release)](https://github.com/issinoho/vms-zlib/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/issinoho/vms-zlib/total?label=downloads)](https://github.com/issinoho/vms-zlib/releases)
-![OpenVMS](https://img.shields.io/badge/OpenVMS-IA64%20%7C%20x86--64-blue)
+![OpenVMS](https://img.shields.io/badge/OpenVMS-IA64%20%7C%20x86--64%20%7C%20Alpha-blue)
 [![License](https://img.shields.io/badge/license-Zlib-blue)](COPYING)
 
-The [zlib](https://zlib.net) compression library (**1.3.2**) built natively for OpenVMS on **IA64**
-and **x86-64**, following zlib's own releases rather than any vendor's release cycle. Its first user
+The [zlib](https://zlib.net) compression library (**1.3.2**) built natively for OpenVMS on **IA64**,
+**x86-64** and **Alpha**, following zlib's own releases rather than any vendor's release cycle. Its first user
 is [curl for OpenVMS](https://github.com/issinoho/vms-curl), which links it statically for
 compressed transfers. It belongs to the same family as
 [GNU grep](https://github.com/issinoho/vms-grep), [GNU sed](https://github.com/issinoho/vms-sed),
@@ -30,12 +30,12 @@ files in `vmsport/`.
 
 ## Status
 
-| | IA64 (OpenVMS V8.4-2L3, VSI C 7.4) | x86-64 (OpenVMS E9.2-4, VSI C 7.7) |
-|---|---|---|
-| Builds with upstream's `make_vms.com` | yes | yes |
-| Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 | 2/2 |
-| Clang (LP64) build for programs compiled with clang (`BUILD ALL CLANG`) | n/a | builds; smoke test 2/2 |
-| PCSI kit ([v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1)) | `ISSINOHO-I64VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-X86VMS-ZLIB-V0103-2E1-1.PCSI` |
+| | IA64 (OpenVMS V8.4-2L3, VSI C 7.4) | x86-64 (OpenVMS E9.2-4, VSI C 7.7) | Alpha (OpenVMS V8.4-2L2, VSI C 7.4) |
+|---|---|---|---|
+| Builds with upstream's `make_vms.com` | yes | yes | yes |
+| Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 | 2/2 | 2/2 |
+| Clang (LP64) build for programs compiled with clang (`BUILD ALL CLANG`) | n/a | builds; smoke test 2/2 | n/a |
+| PCSI kit ([v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1)) | `ISSINOHO-I64VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-X86VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-AXPVMS-ZLIB-V0103-2E1-1.PCSI` |
 
 ## Installing the kit
 
