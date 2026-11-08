@@ -2,3 +2,5 @@
 0001-gzguts-posix-c-source-vms.patch
 0002-make-vms-x86-64.patch
 0003-zlib-h-names-as-is-vms.patch
+0004-make-vms-vax-off-t.patch
+0005-make-vms-vax-badhexconst.patch

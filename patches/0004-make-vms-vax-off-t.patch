@@ -1,0 +1,29 @@
+Subject: make_vms.com: on VAX, use off_t (32 bits) for z_off_t
+
+DEC C for VAX has no 64-bit integer types (%CC-E-NOLONGLONG for both long
+long and __int64). zconf.h.in only takes z_off_t from off_t when it has seen
+unistd.h; otherwise it falls back to "long long". make_vms.com adds
+#include <unistd.h> at the end of the generated zconf.h, after that
+decision, so on VAX every use of z_off_t in zlib.h failed to compile.
+Define z_off_t as off_t at the top of zconf.h on VAX only; Alpha, IA64 and
+x86-64 are unchanged.
+
+--- a/make_vms.com	2026-11-08 23:06:30.551872369 +0000
++++ b/make_vms.com	2026-11-08 23:06:30.596891788 +0000
+@@ -139,6 +139,16 @@
+ $ endif
+ $ open/read/err=aconf_err aconf_in 'fname'
+ $ open/write aconf zconf.h
++$! VAX has no 64-bit integer types, and the template's z_off_t fallback is
++$! "long long" unless unistd.h was found earlier in it.  Use the RTL's off_t
++$! (32 bits on VAX) before the template decides.
++$ if vax
++$ then
++$   write aconf "/* VAX (added by make_vms.com): no 64-bit integers, so off_t */"
++$   write aconf "#include <unistd.h>"
++$   write aconf "#include <unixio.h>"
++$   write aconf "#define z_off_t off_t"
++$ endif
+ $ACONF_LOOP:
+ $ read/end_of_file=aconf_exit aconf_in line
+ $ work = f$edit(line, "compress,trim")
