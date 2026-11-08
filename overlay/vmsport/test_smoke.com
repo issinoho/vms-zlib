@@ -46,7 +46,12 @@ $! 2. minigzip round trip of a multi-record text file.
 $ minigzip = "$" + bin - "]" + "]MINIGZIP.EXE"
 $! minigzip reads and writes raw bytes, so use a Stream_LF file: a VFC file
 $! (the default for OPEN/WRITE) would carry its record headers through.
-$ create/fdl="RECORD; FORMAT STREAM_LF;" data.txt
+$! The FDL goes in a file: an inline /FDL="..." string needs VMS V7.3-1 or
+$! later (OpenVMS VAX V7.3 takes only a file name).
+$ create stmlf.fdl
+RECORD
+        FORMAT  STREAM_LF
+$ create/fdl=stmlf.fdl data.txt
 $ open/append f data.txt
 $ i = 0
 $loop:

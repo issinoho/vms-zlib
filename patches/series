@@ -4,3 +4,4 @@
 0003-zlib-h-names-as-is-vms.patch
 0004-make-vms-vax-off-t.patch
 0005-make-vms-vax-badhexconst.patch
+0006-example-vax-gzputs.patch

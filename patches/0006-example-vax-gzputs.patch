@@ -1,0 +1,30 @@
+Subject: test/example.c: on VAX, write with gzputs() instead of gzprintf()
+
+The VAX C RTL has no vsnprintf(), so zlib builds gzprintf() there as a stub
+that returns Z_STREAM_ERROR (see 0005). example then stopped at its
+gzprintf() check and never ran the deflate, inflate and dictionary tests.
+On VAX only, write the same eight bytes with gzputs(); the read-back check
+("hello, hello!") is unchanged.
+
+--- a/test/example.c	2026-11-08 23:51:54.200137480 +0000
++++ b/test/example.c	2026-11-08 23:51:54.263804243 +0000
+@@ -106,10 +106,19 @@
+         fprintf(stderr, "gzputs err: %s\n", gzerror(file, &err));
+         exit(1);
+     }
++#ifdef __VAX
++    /* The VAX C RTL has no vsnprintf(), so gzprintf() is a stub there that
++       fails; write the same eight bytes so the rest of the test runs. */
++    if (gzputs(file, ", hello!") != 8) {
++        fprintf(stderr, "gzputs err: %s\n", gzerror(file, &err));
++        exit(1);
++    }
++#else
+     if (gzprintf(file, ", %s!", "hello") != 8) {
+         fprintf(stderr, "gzprintf err: %s\n", gzerror(file, &err));
+         exit(1);
+     }
++#endif
+     gzseek(file, 1L, SEEK_CUR); /* add one zero byte */
+     gzclose(file);
+ 
