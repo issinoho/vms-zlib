@@ -6,11 +6,11 @@
 
 [![Release](https://img.shields.io/github/v/release/issinoho/vms-zlib?label=release)](https://github.com/issinoho/vms-zlib/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/issinoho/vms-zlib/total?label=downloads)](https://github.com/issinoho/vms-zlib/releases)
-![OpenVMS](https://img.shields.io/badge/OpenVMS-IA64%20%7C%20x86--64%20%7C%20Alpha-blue)
+![OpenVMS](https://img.shields.io/badge/OpenVMS-IA64%20%7C%20x86--64%20%7C%20Alpha%20%7C%20VAX-blue)
 [![License](https://img.shields.io/badge/license-Zlib-blue)](COPYING)
 
 The [zlib](https://zlib.net) compression library (**1.3.2**) built natively for OpenVMS on **IA64**,
-**x86-64** and **Alpha**, following zlib's own releases rather than any vendor's release cycle. Its first user
+**x86-64**, **Alpha** and **VAX**, following zlib's own releases rather than any vendor's release cycle. Its first user
 is [curl for OpenVMS](https://github.com/issinoho/vms-curl), which links it statically for
 compressed transfers. It belongs to the same family as
 [GNU grep](https://github.com/issinoho/vms-grep), [GNU sed](https://github.com/issinoho/vms-sed),
@@ -30,12 +30,16 @@ files in `vmsport/`.
 
 ## Status
 
-| | IA64 (OpenVMS V8.4-2L3, VSI C 7.4) | x86-64 (OpenVMS E9.2-4, VSI C 7.7) | Alpha (OpenVMS V8.4-2L2, VSI C 7.4) |
-|---|---|---|---|
-| Builds with upstream's `make_vms.com` | yes | yes | yes |
-| Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 | 2/2 | 2/2 |
-| Clang (LP64) build for programs compiled with clang (`BUILD ALL CLANG`) | n/a | builds; smoke test 2/2 | n/a |
-| PCSI kit ([v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1)) | `ISSINOHO-I64VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-X86VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-AXPVMS-ZLIB-V0103-2E1-1.PCSI` |
+| | IA64 (OpenVMS V8.4-2L3, VSI C 7.4) | x86-64 (OpenVMS E9.2-4, VSI C 7.7) | Alpha (OpenVMS V8.4-2L2, VSI C 7.4) | VAX (OpenVMS V7.3, Compaq C 6.4) |
+|---|---|---|---|---|
+| Builds with upstream's `make_vms.com` | yes | yes | yes | yes (patches 0004-0005) |
+| Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 | 2/2 | 2/2 | 2/2 |
+| Clang (LP64) build for programs compiled with clang (`BUILD ALL CLANG`) | n/a | builds; smoke test 2/2 | n/a | n/a |
+| PCSI kit ([v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1)) | `ISSINOHO-I64VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-X86VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-AXPVMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-VMS-ZLIB-V0103-2E1-1.PCSI` |
+
+On **VAX** (no 64-bit integers and no `vsnprintf()` in its C library), file offsets are
+32-bit (`off_t`) and `gzprintf()` is a stub that returns `Z_STREAM_ERROR`; everything else
+works. The VAX tree was built and tested over Telnet/FTP, as the VAX has no SSH.
 
 ## Installing the kit
 
@@ -84,6 +88,9 @@ configured `zconf.h`, into `[.OBJ_X86_64_CLANG]` and the install tree
 | 0001 | `gzguts.h`: don't define `_POSIX_C_SOURCE` on VMS. Defined after `<stdio.h>`, it makes the CRTL's `<fcntl.h>` redeclare `creat()` incompatibly, and the `gz*.c` files did not compile. |
 | 0002 | `make_vms.com`: recognise OpenVMS x86-64. It took the architecture from `HW_MODEL`, which put x86-64 in the VAX range: objects were compiled without `/NAMES=AS_IS` and the shared image options file was rejected. |
 | 0003 | `zlib.h`: declare the API with `#pragma names as_is` on VMS, so programs compiled with the default `/NAMES=UPPERCASE` link with the `AS_IS` library. |
+| 0004 | `make_vms.com`: on VAX, define `z_off_t` as `off_t` at the top of `zconf.h`. DEC C for VAX has no 64-bit integers, and the template otherwise falls back to `long long`. |
+| 0005 | `make_vms.com`: on VAX, disable two harmless warnings that stop MMS: `BADHEXCONST` (zutil.h's 64-bit type test) and `BADDIRECTIVE` (`#warning` for the `gzprintf()` stub, as the VAX C RTL has no `vsnprintf()`). |
+| 0006 | `test/example.c`: on VAX, write with `gzputs()` instead of the `gzprintf()` stub, so zlib's self-test runs to the end. |
 
 All three apply to upstream's VMS support and could go back to zlib.
 
