@@ -9,7 +9,7 @@
 ![OpenVMS](https://img.shields.io/badge/OpenVMS-IA64%20%7C%20x86--64%20%7C%20Alpha%20%7C%20VAX-blue)
 [![License](https://img.shields.io/badge/license-Zlib-blue)](COPYING)
 
-The [zlib](https://zlib.net) compression library (**1.3.2**) built natively for OpenVMS on **IA64**,
+The [zlib](https://zlib.net) compression library (**1.4**) built natively for OpenVMS on **IA64**,
 **x86-64**, **Alpha** and **VAX**, following zlib's own releases rather than any vendor's release cycle. Its first user
 is [curl for OpenVMS](https://github.com/issinoho/vms-curl), which links it statically for
 compressed transfers. It belongs to the same family as
@@ -32,10 +32,16 @@ files in `vmsport/`.
 
 | | IA64 (OpenVMS V8.4-2L3, VSI C 7.4) | x86-64 (OpenVMS E9.2-4, VSI C 7.7) | Alpha (OpenVMS V8.4-2L2, VSI C 7.4) | VAX (OpenVMS V7.3, Compaq C 6.4) |
 |---|---|---|---|---|
-| Builds with upstream's `make_vms.com` | yes | yes | yes | yes (patches 0004-0005) |
-| Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 | 2/2 | 2/2 | 2/2 |
+| zlib version of the newest kit | 1.3.2 (1.4 to follow) | **1.4** | **1.4** | 1.3.2 (1.4 to follow) |
+| Builds with upstream's `make_vms.com` | yes (1.3.2) | yes | yes | yes (1.3.2; patches 0004-0005) |
+| Smoke test (zlib's `example` self-test, `minigzip` round trip) | 2/2 (1.3.2) | 2/2 | 2/2 | 2/2 (1.3.2) |
 | Clang (LP64) build for programs compiled with clang (`BUILD ALL CLANG`) | n/a | builds; smoke test 2/2 | n/a | n/a |
-| PCSI kit ([v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1)) | `ISSINOHO-I64VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-X86VMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-AXPVMS-ZLIB-V0103-2E1-1.PCSI` | `ISSINOHO-VMS-ZLIB-V0103-2E1-1.PCSI` |
+| PCSI kit | [v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1): `ISSINOHO-I64VMS-ZLIB-V0103-2E1-1.PCSI` | [v1.4-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.4-vms1): `ISSINOHO-X86VMS-ZLIB-V0104-0E1-1.PCSI` | [v1.4-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.4-vms1): `ISSINOHO-AXPVMS-ZLIB-V0104-0E1-1.PCSI` | [v1.3.2-vms1](https://github.com/issinoho/vms-zlib/releases/tag/v1.3.2-vms1): `ISSINOHO-VMS-ZLIB-V0103-2E1-1.PCSI` |
+
+zlib 1.4 fixes several memory-safety bugs, among them a `gzwrite()` buffer overflow
+(CVE-2026-85091). The x86-64 and Alpha kits are on 1.4. The IA64 and VAX kits are still
+1.3.2: the IA64 build node is unavailable for now, and the VAX is built by hand over
+Telnet/FTP. Both will move to 1.4 with the same patches.
 
 On **VAX** (no 64-bit integers and no `vsnprintf()` in its C library), file offsets are
 32-bit (`off_t`) and `gzprintf()` is a stub that returns `Z_STREAM_ERROR`; everything else
@@ -49,7 +55,7 @@ the release's `SHA256SUMS`. A kit downloaded through a non-VMS system loses its 
 format, so restore that first, then install it:
 
 ```
-$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-*-ZLIB-V0103-2E1-1.PCSI
+$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-*-ZLIB-V0104-0E1-1.PCSI
 $ PRODUCT INSTALL ZLIB /PRODUCER=ISSINOHO /SOURCE=dev:[dir]
 ```
 
@@ -59,7 +65,8 @@ documentation in `[ZLIB.DOC]`, and `SYS$STARTUP:ZLIB$STARTUP.COM`, which defines
 every boot). Build against it with `/INCLUDE=ZLIB$ROOT:[INCLUDE]` and
 `ZLIB$ROOT:[LIB]LIBZ.OLB/LIBRARY`; any `/NAMES` setting works (patch 0003).
 `PRODUCT REMOVE ZLIB` removes it and deassigns `ZLIB$ROOT`. The kit's version
-`V1.3-2E1` is zlib 1.3.2 with our patch level as the ECO.
+`V1.4-0E1` is zlib 1.4 (update 0) with our patch level as the ECO; the 1.3.2 kits are
+`V1.3-2E1`, and PCSI upgrades one to the other.
 
 ## What gets built
 
@@ -91,8 +98,9 @@ configured `zconf.h`, into `[.OBJ_X86_64_CLANG]` and the install tree
 | 0004 | `make_vms.com`: on VAX, define `z_off_t` as `off_t` at the top of `zconf.h`. DEC C for VAX has no 64-bit integers, and the template otherwise falls back to `long long`. |
 | 0005 | `make_vms.com`: on VAX, disable two harmless warnings that stop MMS: `BADHEXCONST` (zutil.h's 64-bit type test) and `BADDIRECTIVE` (`#warning` for the `gzprintf()` stub, as the VAX C RTL has no `vsnprintf()`). |
 | 0006 | `test/example.c`: on VAX, write with `gzputs()` instead of the `gzprintf()` stub, so zlib's self-test runs to the end. |
+| 0007 | `make_vms.com`: define `z_off_t` as `long long` on Alpha, IA64 and x86-64. zlib 1.4 changed `zconf.h`'s last-resort `z_off_t` from `long long` to `long`, which VMS always takes and which is 32 bits in VSI C, so `gzseek()`/`gztell()` would have been limited to 2 GB and `z_off_t` would no longer match programs built against 1.3.x. It stays 8 bytes, as in 1.3.2. |
 
-All three apply to upstream's VMS support and could go back to zlib.
+All of them apply to upstream's VMS support and could go back to zlib.
 
 ## How to build
 
@@ -104,7 +112,7 @@ tools/build.sh ia64         # upload, then @[.VMSPORT]BUILD on the node (upstrea
 tools/test.sh ia64          # smoke test
 ```
 
-By hand on VMS: copy the top-level files of `staging/zlib-1.3.2/` and its `vmsport/` and
+By hand on VMS: copy the top-level files of `staging/zlib-1.4/` and its `vmsport/` and
 `test/` directories, then `@[.VMSPORT]BUILD` and `@[.VMSPORT]TEST_SMOKE`. Set up
 `tools/nodes.conf` as described in
 [vms-grep's README](https://github.com/issinoho/vms-grep#2b-build-on-vms-from-the-host-over-ssh).
@@ -114,7 +122,7 @@ By hand on VMS: copy the top-level files of `staging/zlib-1.3.2/` and its `vmspo
 1. ~~curl for OpenVMS links this library statically~~: done in
    [vms-curl v8.22.0-vms1](https://github.com/issinoho/vms-curl/releases/tag/v8.22.0-vms1);
    [vms-wget](https://github.com/issinoho/vms-wget) links it too.
-2. Patches 0001-0003 offered to zlib.
+2. Patches 0001-0003 and 0007 offered to zlib.
 3. ~~A port to OpenVMS **Alpha**.~~ Done: see Status (Alpha and VAX kits).
 
 ## The family
