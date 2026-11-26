@@ -48,6 +48,7 @@ kit=$stage/vmsport/kit
 : "${KIT_PRODUCER:=ISSINOHO}"
 # zlib versions have three parts (1.3.2): the third is the PCSI update and
 # our VMS patch level the ECO, as in vms-awk, so 1.3.2-vms1 is V1.3-2E1.
+# A two-part version has update 0: 1.4-vms1 is V1.4-0E1.
 IFS=. read -r major minor update _ <<< "$UPSTREAM_VERSION"
 pcsiversion="V$major.$minor-${update:-0}E$VMS_PATCH_LEVEL"
 kitversion="$UPSTREAM_VERSION-vms$VMS_PATCH_LEVEL"

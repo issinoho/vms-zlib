@@ -1,0 +1,33 @@
+Subject: make_vms.com: keep z_off_t 64 bits on Alpha, IA64 and x86-64
+
+zlib 1.4 ("Return z_off_t default to long for portability") changed the
+last-resort z_off_t in zconf.h.in from "long long" back to "long".  The
+zconf.h that make_vms.com generates never defines Z_HAVE_UNISTD_H before
+that point, so VMS always takes the fallback, and long is 32 bits in VSI C
+on every VMS platform.  Measured on x86-64 with the 1.3.2 headers:
+sizeof(z_off_t) is 8, with or without _LARGEFILE.  With 1.4 unchanged it
+would become 4: gzseek()/gztell()/gzoffset() limited to 2 GB, and a
+different z_off_t from the one every program built against 1.3.x uses.
+
+Define z_off_t as long long at the top of the generated zconf.h on every
+platform but VAX, which keeps off_t (patch 0004).  The 64-bit clang
+(LP64) build already has a 64-bit long, so nothing changes there.
+
+--- a/make_vms.com	2026-11-26 15:21:03.288761500 +0000
++++ b/make_vms.com	2026-11-26 15:21:03.321276451 +0000
+@@ -153,6 +153,15 @@
+ $   write aconf "#include <unistd.h>"
+ $   write aconf "#include <unixio.h>"
+ $   write aconf "#define z_off_t off_t"
++$ else
++$!  zlib 1.4 changed the template's last-resort z_off_t from "long long" to
++$!  "long", and the template never sees unistd.h here (Z_HAVE_UNISTD_H stays
++$!  undefined), so VMS takes that fallback.  long is 32 bits in VSI C even on
++$!  Alpha, IA64 and x86-64: z_off_t would shrink from 8 bytes to 4, limiting
++$!  gzseek()/gztell() to 2 GB and changing the size every program built
++$!  against 1.3.x used.  Keep the 64-bit z_off_t that 1.3.x gave VMS.
++$   write aconf "/* VMS (added by make_vms.com): keep z_off_t 64 bits, as in zlib 1.3.x */"
++$   write aconf "#define z_off_t long long"
+ $ endif
+ $ACONF_LOOP:
+ $ read/end_of_file=aconf_exit aconf_in line
